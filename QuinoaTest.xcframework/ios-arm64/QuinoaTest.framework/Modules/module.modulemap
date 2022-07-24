@@ -1,0 +1,11 @@
+framework module QuinoaTest {
+  umbrella header "QuinoaTest.h"
+
+  export *
+  module * { export * }
+}
+
+module QuinoaTest.Swift {
+    header "QuinoaTest-Swift.h"
+    requires objc
+}

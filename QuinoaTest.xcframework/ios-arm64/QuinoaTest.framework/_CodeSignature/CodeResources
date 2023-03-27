@@ -22,11 +22,11 @@
 		</data>
 		<key>Modules/QuinoaTest.swiftmodule/arm64-apple-ios.swiftinterface</key>
 		<data>
-		7D+9mhC96BBeAMEypwlXOCDsOKU=
+		ouJ9JINqPHG6YJ5KDsnP/j6ZBGY=
 		</data>
 		<key>Modules/QuinoaTest.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<data>
-		3bCT/m2YLy2xFdo3WiJJRzy6JDo=
+		SZuxz2PgKcTP9ndX3A1GotCoGk8=
 		</data>
 		<key>Modules/module.modulemap</key>
 		<data>
@@ -60,14 +60,14 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			f3yIk74rid8OHN8/hGwBN9ATpVWmtcRKFf8mrjQjfo4=
+			dTw6ikWOBxV4JrIkU7PokeSF90B5BHC4Dh/hIu2biAA=
 			</data>
 		</dict>
 		<key>Modules/QuinoaTest.swiftmodule/arm64-apple-ios.swiftmodule</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			Mx498R2FOFLvrM7JI7qdVMun58GJiHGijFIWmt74yNo=
+			sSvYe7p84e+SOH2tKpCQjrw0Tx5iO5W8hXy5AIZZu+U=
 			</data>
 		</dict>
 		<key>Modules/module.modulemap</key>

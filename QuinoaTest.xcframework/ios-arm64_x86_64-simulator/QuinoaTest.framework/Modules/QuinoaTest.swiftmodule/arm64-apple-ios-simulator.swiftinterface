@@ -7,5 +7,6 @@ import Swift
 import _Concurrency
 @_hasMissingDesignatedInitializers public class QuinoaMain {
   public static func getMessage() -> Swift.String
+  public static func getMessage2() -> Swift.String
   @objc deinit
 }

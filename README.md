@@ -1,138 +1,292 @@
-# Swift Crypto
+<img src="https://swift.org/assets/images/swift.svg" alt="Swift logo" height="70" >
 
-Swift Crypto is an open-source implementation of a substantial portion of the API of [Apple CryptoKit](https://developer.apple.com/documentation/cryptokit) suitable for use on Linux platforms. It enables cross-platform or server applications with the advantages of CryptoKit.
+# Swift Protobuf
 
-## Using Swift Crypto
+**Welcome to Swift Protobuf!**
 
-Swift Crypto is available as a Swift Package Manager package. To use it, add the following dependency in your `Package.swift`:
+[Apple's Swift programming language](https://swift.org/) is a perfect
+complement to [Google's Protocol Buffer](https://protobuf.dev/)
+("protobuf") serialization technology.
+They both emphasize high performance and programmer safety.
+
+This project provides both the command-line program that adds Swift
+code generation to Google's `protoc` and the runtime library that is
+necessary for using the generated code.
+After using the protoc plugin to generate Swift code from your .proto
+files, you will need to add this library to your project.
+
+[![Build and Test](https://github.com/apple/swift-protobuf/workflows/Build%20and%20Test/badge.svg)](https://github.com/apple/swift-protobuf/actions?query=workflow%3A%22Build+and+Test%22)
+[![Check Upstream Protos](https://github.com/apple/swift-protobuf/workflows/Check%20Upstream%20Proto%20Files/badge.svg)](https://github.com/apple/swift-protobuf/actions?query=workflow%3A%22Check+Upstream+Proto+Files%22)
+[![Run Conformance Tests](https://github.com/apple/swift-protobuf/workflows/Run%20Conformance%20Tests/badge.svg)](https://github.com/apple/swift-protobuf/actions?query=workflow%3A%22Run+Conformance+Tests%22)
+
+# Features of SwiftProtobuf
+
+SwiftProtobuf offers many advantages over alternative serialization
+systems:
+
+* Safety: The protobuf code-generation system avoids the
+  errors that are common with hand-built serialization code.
+* Correctness: SwiftProtobuf passes both its own extensive
+  test suite and Google's full conformance test for protobuf
+  correctness.
+* Schema-driven: Defining your data structures in a separate
+  `.proto` schema file clearly documents your communications
+  conventions.
+* Idiomatic: SwiftProtobuf takes full advantage of the Swift language.
+  In particular, all generated types provide full Swift copy-on-write
+  value semantics.
+* Efficient binary serialization: The `.serializedBytes()`
+  method returns a bag of bytes with a compact binary form of your data.
+  You can deserialize the data using the `init(serializedBytes:)`
+  initializer.
+* Standard JSON serialization: The `.jsonUTF8Data()` method returns a JSON
+  form of your data that can be parsed with the `init(jsonUTF8Bytes:)`
+  initializer.
+* Hashable, Equatable: The generated struct can be put into a
+  `Set<>` or `Dictionary<>`.
+* Performant: The binary and JSON serializers have been
+  extensively optimized.
+* Extensible: You can add your own Swift extensions to any
+  of the generated types.
+
+Best of all, you can take the same `.proto` file and generate
+Java, C++, Python, or Objective-C for use on other platforms. The
+generated code for those languages will use the exact same
+serialization and deserialization conventions as SwiftProtobuf, making
+it easy to exchange serialized data in binary or JSON forms, with no
+additional effort on your part.
+
+# Documentation
+
+More information is available in the associated documentation:
+
+ * [Google's protobuf documentation](https://protobuf.dev/)
+   provides general information about protocol buffers, the protoc compiler,
+   and how to use protocol buffers with C++, Java, and other languages.
+ * [PLUGIN.md](Documentation/PLUGIN.md) documents the `protoc-gen-swift`
+   plugin that adds Swift support to the `protoc` program
+ * [API.md](Documentation/API.md) documents how to use the generated code.
+   This is recommended reading for anyone using SwiftProtobuf in their
+   project.
+ * [INTERNALS.md](Documentation/INTERNALS.md) documents the internal structure
+   of the generated code and the library.  This
+   should only be needed by folks interested in working on SwiftProtobuf
+   itself.
+ * [STYLE_GUIDELINES.md](Documentation/STYLE_GUIDELINES.md) documents the style
+   guidelines we have adopted in our codebase if you are interested in
+   contributing
+
+# Getting Started
+
+If you've worked with Protocol Buffers before, adding Swift support is very
+simple: you just need to build the `protoc-gen-swift` program and copy it into
+your PATH.
+The `protoc` program will find and use it automatically, allowing you
+to build Swift sources for your proto files.
+You will also, of course, need to add the SwiftProtobuf runtime library to
+your project as explained below.
+
+## System Requirements
+
+To use Swift with Protocol buffers, you'll need:
+
+* A Swift 5.0 or later compiler (Xcode 10.2 or later).  Support is included for
+  the Swift Package Manager. The Swift protobuf project is being developed and
+  tested against the latest release version of Swift available from
+  [Swift.org](https://swift.org)
+
+* Google's protoc compiler.  The Swift protoc plugin is being actively developed
+  and tested against the latest protobuf sources. The SwiftProtobuf tests need a
+  version of protoc which supports the `swift_prefix` option (introduced in
+  protoc 3.2.0). It may work with earlier versions of protoc. You can get recent
+  versions from
+  [Google's github repository](https://github.com/protocolbuffers/protobuf).
+
+## Building and Installing the Code Generator Plugin
+
+To translate `.proto` files into Swift, you will need both Google's
+protoc compiler and the SwiftProtobuf code generator plugin.
+
+Building the plugin should be simple on any supported Swift platform:
+
+```
+$ git clone https://github.com/apple/swift-protobuf.git
+$ cd swift-protobuf
+```
+
+Pick what released version of SwiftProtobuf you are going to use.  You can get
+a list of tags with:
+
+```
+$ git tag -l
+```
+
+Once you pick the version you will use, set your local state to match, and
+build the protoc plugin:
+
+```
+$ git checkout tags/[tag_name]
+$ swift build -c release
+```
+
+This will create a binary called `protoc-gen-swift` in the `.build/release`
+directory.
+
+To install, just copy this one executable into a directory that is
+part of your `PATH` environment variable.
+
+NOTE: The Swift runtime support is now included with macOS. If you are
+using old Xcode versions or are on older system versions, you might need
+to use also use `--static-swift-stdlib` with `swift build`.
+
+### Alternatively install via Homebrew
+
+If you prefer using [Homebrew](https://brew.sh):
+
+```
+$ brew install swift-protobuf
+```
+
+This will install `protoc` compiler and Swift code generator plugin.
+
+## Converting .proto files into Swift
+
+To generate Swift output for your .proto files, you run the `protoc` command as
+usual, using the `--swift_out=<directory>` option:
+
+```
+$ protoc --swift_out=. my.proto
+```
+
+The `protoc` program will automatically look for `protoc-gen-swift` in your
+`PATH` and use it.
+
+Each `.proto` input file will get translated to a corresponding `.pb.swift`
+file in the output directory.
+
+More information about building and using `protoc-gen-swift` can be found
+in the [detailed Plugin documentation](Documentation/PLUGIN.md).
+
+## Adding the SwiftProtobuf library to your project...
+
+To use the generated code, you need to include the `SwiftProtobuf` library
+module in your project.  How you do this will vary depending on how
+you're building your project.  Note that in all cases, we strongly recommend
+that you use the version of the SwiftProtobuf library that corresponds to
+the version of `protoc-gen-swift` you used to generate the code.
+
+### ...using `swift build`
+
+After copying the `.pb.swift` files into your project, you will need to add the
+[SwiftProtobuf library](https://github.com/apple/swift-protobuf) to your
+project to support the generated code.
+If you are using the Swift Package Manager, add a dependency to your
+`Package.swift` file and import the `SwiftProtobuf` library into the desired
+targets.  Adjust the `"1.6.0"` here to match the `[tag_name]` you used to build
+the plugin above:
 
 ```swift
-// swift-crypto 1.x and 2.x are almost API compatible, so most clients should
-// allow either
-.package(url: "https://github.com/apple/swift-crypto.git", "1.0.0" ..< "3.0.0"),
+dependencies: [
+    .package(url: "https://github.com/apple/swift-protobuf.git", from: "1.6.0"),
+],
+targets: [
+    .target(
+      name: "MyTarget",
+      dependencies: [.product(name: "SwiftProtobuf", package: "swift-protobuf")]
+    ),
+]
 ```
 
-and to your target, add `Crypto` to your dependencies. You can then `import Crypto` to get access to Swift Crypto's functionality.
+### ...using Xcode
 
-## Functionality
+If you are using Xcode, then you should:
 
-Swift Crypto exposes the portions of the CryptoKit API that do not rely on specialised hardware to any Swift application. It provides safe APIs that abstract over the complexity of many cryptographic primitives that need to be used in modern applications. These APIs encourage safe usages of the underlying primitives, follow cryptographic best practices, and should be the first choice for building applications that need to use cryptography.
+* Add the `.pb.swift` source files generated from your protos directly to your
+  project
+* Add this SwiftPM package as dependency of your xcode project:
+  [Apple Docs](https://developer.apple.com/documentation/swift_packages/adding_package_dependencies_to_your_app)
 
-The current features of Swift Crypto cover key exchange, key derivation, encryption and decryption, hashing, message authentication, and more.
+### ...using CocoaPods
 
-For specific API documentation, please see our documentation.
+If you're using CocoaPods, add this to your `Podfile` adjusting the `:tag` to
+match the `[tag_name]` you used to build the plugin above:
 
-## Implementation
-
-Swift Crypto compiles in two distinct modes depending on the platform for which it is being built.
-
-When building Swift Crypto for use on an Apple platform where CryptoKit is already available, Swift Crypto compiles its entire API surface down to nothing and simply re-exports the API of CryptoKit. This means that when using Apple platforms Swift Crypto simply delegates all work to the core implementation of CryptoKit, as though Swift Crypto was not even there.
-
-When building Swift Crypto for use on Linux, Swift Crypto builds substantially more code. In particular, we build:
-
-1. A vendored copy of BoringSSL's libcrypto.
-2. The common API of Swift Crypto and CryptoKit.
-3. The backing implementation of this common API, which calls into BoringSSL.
-
-The API code, and some cryptographic primitives which are directly implemented in Swift, are exactly the same for both Apple CryptoKit and Swift Crypto. The backing BoringSSL-based implementation is unique to Swift Crypto.
-
-## Evolution
-
-The vast majority of the Swift Crypto code is intended to remain in lockstep with the current version of Apple CryptoKit. For this reason, patches that extend the API of Swift Crypto will be evaluated cautiously. For any such extension there are two possible outcomes for adding the API.
-
-Firstly, if the API is judged to be generally valuable and suitable for contribution to Apple CryptoKit, the API will be merged into a Staging namespace in Swift Crypto. This Staging namespace is a temporary home for any API that is expected to become available in Apple CryptoKit but that is not available today. This enables users to use the API soon after merging. When the API is generally available in CryptoKit the API will be deprecated in the Staging namespace and made available in the main Swift Crypto namespace.
-
-Secondly, if the API is judged not to meet the criteria for acceptance in general CryptoKit but is sufficiently important to have available for server use-cases, it will be merged into a Server namespace. APIs are not expected to leave this namespace, as it indicates that they are not generally available but can only be accessed when using Swift Crypto.
-
-Note that Swift Crypto does not intend to support all possible cryptographic primitives. Swift Crypto will focus on safe, modern cryptographic primitives that are broadly useful and that do not easily lend themselves to misuse. This means that some cryptographic algorithms may never be supported: for example, 3DES is highly unlikely to ever be supported by Swift Crypto due to the difficulty of safely deploying it and its legacy status. Please be aware when proposing the addition of new primitives to Swift Crypto that the proposal may be refused for this reason.
-
-### Code Organisation
-
-Files in this repository are divided into two groups, based on whether they have a name that ends in `_boring` or are in a `BoringSSL` directory, or if they are not.
-
-Files that meet the above criteria are specific to the Swift Crypto implementation. Changes to these files can be made fairly easily, so long as they meet the criteria below. If your file needs to `import CCryptoBoringSSL` or access a BoringSSL API, it needs to be marked this way.
-
-Files that do not have the `_boring` suffix are part of the public API of CryptoKit. Changing these requires passing a higher bar, as any change in these files must be accompanied by a change in CryptoKit itself.
-
-## Contributing
-
-Before contributing please read [CONTRIBUTING.md](CONTRIBUTING.md), also make sure to read the two following sections.
-
-#### Contributing new primitives
-
-To contribute a new cryptographic primitive to Swift Crypto, you should address the following questions:
-
-1. What is the new primitive for?
-2. How widely is it deployed?
-3. Is it specified in any public specifications or used by any such specification?
-4. How easy is it to misuse?
-5. In what way does Swift Crypto fail to satisfy that use-case today?
-
-In addition, new primitive implementations will only be accepted in cases where the implementation is thoroughly tested, including being tested with all currently available test vectors. If the [Wycheproof](https://github.com/google/wycheproof) project provides vectors for the algorithm those should be tested as well. It must be possible to ensure that we can appropriately regression test our implementations.
-
-#### Contributing bug fixes
-
-If you discover a bug with Swift Crypto, please report it via GitHub.
-
-If you are interested in fixing a bug, feel free to open a pull request. Please also submit regression tests with bug fixes to ensure that they are not regressed in future.
-
-If you have issues with CryptoKit, instead of Swift Crypto, please use [Feedback Assistant](https://feedbackassistant.apple.com) to file those issues as you normally would.
-
-### Get started contributing
-
-#### `gyb`
-
-Some of the files in this project are autogenerated (metaprogramming) using the Swift Utils tools called [gyb](https://github.com/apple/swift/blob/main/utils/gyb.py) (_"generate your boilerplate"_). `gyb` is included in [`./scripts/gyb`](scripts/gyb).
-
-`gyb` will generate some `Foobar.swift` Swift file from some `Foobar.swift.gyb` _template_ file. **You should not edit `Foobar.swift` directly**, since all manual edits in that generated file will be overwritten the next time `gyb` is run.
-
-You run `gyb` for a single file like so:
-
-```bash
-./scripts/gyb --line-directive "" Sources/Foobar.swift.gyb -o Sources/Foobar.swift
+```ruby
+pod 'SwiftProtobuf', '~> 1.0'
 ```
 
-More conveniently you can run the bash script `./scripts/generate_boilerplate_files_with_gyb.sh` to generate all Swift files from their corresponding gyb template.
+And run `pod install`.
 
-**If you add a new `.gyb` file, you should append a `// MARK: - Generated file, do NOT edit` warning** inside it, e.g.
+NOTE: CocoaPods 1.7 or newer is required.
 
+# Quick Start
+
+Once you have installed the code generator, used it to
+generate Swift code from your `.proto` file, and
+added the SwiftProtobuf library to your project, you can
+just use the generated types as you would any other Swift
+struct.
+
+For example, you might start with the following very simple
+proto file:
+```protobuf
+syntax = "proto3";
+
+message BookInfo {
+   int64 id = 1;
+   string title = 2;
+   string author = 3;
+}
+```
+
+Then generate Swift code using:
+```
+$ protoc --swift_out=. DataModel.proto
+```
+
+The generated code will expose a Swift property for
+each of the proto fields as well as a selection
+of serialization and deserialization capabilities:
 ```swift
-// MARK: - Generated file, do NOT edit
-// any edits of this file WILL be overwritten and thus discarded
-// see section `gyb` in `README` for details.
+// Create a BookInfo object and populate it:
+var info = BookInfo()
+info.id = 1734
+info.title = "Really Interesting Book"
+info.author = "Jane Smith"
+
+// As above, but generating a read-only value:
+let info2 = BookInfo.with {
+    $0.id = 1735
+    $0.title = "Even More Interesting"
+    $0.author = "Jane Q. Smith"
+  }
+
+// Serialize to binary protobuf format:
+let binaryData: Data = try info.serializedData()
+
+// Deserialize a received Data object from `binaryData`
+let decodedInfo = try BookInfo(serializedData: binaryData)
+
+// Serialize to JSON format as a Data object
+let jsonData: Data = try info.jsonUTF8Data()
+
+// Deserialize from JSON format from `jsonData`
+let receivedFromJSON = try BookInfo(jsonUTF8Bytes: jsonData)
 ```
 
-### Security
+You can find more information in the detailed
+[API Documentation](Documentation/API.md).
 
-If you believe you have identified a vulnerability in Swift Crypto, please [report that vulnerability to Apple through the usual channel](https://support.apple.com/en-us/HT201220).
+## Report any issues
 
-### Swift versions
+If you run into problems, please send us a detailed report.
+At a minimum, please include:
 
-The most recent versions of Swift Crypto support Swift 5.5 and newer. The minimum Swift version supported by Swift Crypto releases are detailed below:
-
-Swift Crypto      | Minimum Swift Version
-------------------|----------------------
-`2.0.0 ..< 2.1.0` | 5.2
-`2.1.0 ..< 2.2.0` | 5.4
-`2.2.0 ...`       | 5.5
-
-### Compatibility
-
-Swift Crypto follows [SemVer 2.0.0](https://semver.org/#semantic-versioning-200). Our public API is the same as that of CryptoKit (except where we lack an implementation entirely), as well as everything in the Server and Staging namespaces. Any symbol beginning with an underscore, and any product beginning with an underscore, is not subject to semantic versioning: these APIs may change without warning. We do not maintain a stable ABI, as Swift Crypto is a source-only distribution.
-
-What this means for you is that you should depend on Swift Crypto with a version range that covers everything from the minimum Swift Crypto version you require up to the next major version.
-In SwiftPM that can be easily done specifying for example `from: "1.0.0"` meaning that you support Swift Crypto in every version starting from 1.0.0 up to (excluding) 2.0.0.
-SemVer and Swift Crypto's Public API guarantees should result in a working program without having to worry about testing every single version for compatibility.
-
-Swift Crypto 2.0.0 was released in September 2021. The only breaking change between Swift Crypto 2.0.0 and 1.0.0 was the addition of new cases in the `CryptoKitError` enumeration. For most users, then, it's safe to depend on either the 1.0.0 _or_ 2.0.0 series of releases.
-
-To do so, please use the following dependency in your `Package.swift`:
-
-```swift
-.package(url: "https://github.com/apple/swift-crypto.git", "1.0.0" ..< "3.0.0"),
-```
-
-### Developing Swift Crypto on macOS
-
-Swift Crypto normally defers to the OS implementation of CryptoKit on macOS. Naturally, this makes developing Swift Crypto on macOS tricky. To get Swift Crypto to build the open source implementation on macOS, in `Package.swift`, uncomment the line that reads: `//.define("CRYPTO_IN_SWIFTPM_FORCE_BUILD_API")`, as this will force Swift Crypto to build its public API.
-
+* The specific operating system and version (for example, "macOS 10.12.1" or
+  "Ubuntu 16.10")
+* The version of Swift you have installed (from `swift --version`)
+* The version of the protoc compiler you are working with from
+  `protoc --version`
+* The specific version of this source code (you can use `git log -1` to get the
+  latest commit ID)
+* Any local changes you may have
